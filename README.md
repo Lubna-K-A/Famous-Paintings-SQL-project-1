@@ -1,11 +1,12 @@
 
 
 -- 1) Fetch all the paintings which are not displayed on any museums?
+
 select * 
 from work
 where museum_id = 'null';
-===================================================================================
-===================================================================================
+
+
 -- 2) Are there museuems without any paintings?
 
 select * from museum m
@@ -16,21 +17,22 @@ SELECT *
 FROM museum m
 LEFT JOIN work w ON m.museum_id = w.museum_id
 WHERE w.museum_id IS NULL;
-====================================================================================
-====================================================================================
+
+
 -- 3) How many paintings have an asking price of more than their regular price? 
 
 select *
 from product_size
 where sale_price > regular_price;
-===============================================================================================
+
+
 -- 4) Identify the paintings whose asking price is less than 50% of its regular price
 
 SELECT *
 FROM product_size
 WHERE sale_price < (0.5 * regular_price);
 
-=================================================================================================
+
 -- 5) Which canva size costs the most?
 
 select C.label as canva, 
@@ -40,7 +42,8 @@ from (select *,
 	  from product_size) P
 join canvas_size C on C.size_id
 where P.rnk=1;
-=======================================================================================================
+
+
 -- 6) identify duplicate records from work, product_size and subject tables
 
 SELECT work_id, name, artist_id, style, museum_id, COUNT(*) AS duplicate_count
@@ -64,14 +67,16 @@ from product_size
 group by work_id,size_id,sale_price,regular_price
 having count(*) > 1;
 
-================================================================================================================
+
 
 -- 7) Identify the museums with invalid city information in the given dataset
+
 select museum_id,city
 from museum
 where city REGEXP '^[0-9]';
 
 -- 8) Fetch the top 10 most famous painting subject
+
 select count(*) as count,
 	   subject,
        dense_rank() over(order by count(*) desc) as ranking
@@ -79,8 +84,7 @@ from subjects
 group by subject
 limit 10;
 
-====================================================================================================================
-====================================================================================================================
+
 -- 8) Identify the museums which are open on both Sunday and Monday. 
 -- Display museum name, city.
 
@@ -93,8 +97,7 @@ and exists (select 1 from museum_hours mh2
 			where mh2.museum_id=MH.museum_id 
 			and mh2.day='Monday');
             
- =====================================================================================================================
- =====================================================================================================================
+ 
 -- 10)How many museums are open every single day?
 
 SELECT COUNT(museum_id) as number_of_museums_open_every_day
@@ -105,8 +108,7 @@ FROM (
     HAVING days_open = 7
 ) x;
 
-======================================================================================================================
-======================================================================================================================
+
 -- 11) Which are the top 5 most popular museum? 
 -- (Popularity is defined based on most no of paintings in a museum)
 
@@ -118,11 +120,11 @@ select m.name as museum, m.city,m.country,x.no_of_painintgs
 			group by m.museum_id) x
 	join museum m on m.museum_id=x.museum_id
 	where x.rnk<=5;
- ========================================================================================================================
- =======================================================================================================================
+ 
     
 -- 12) Who are the top 5 most popular artist? (Popularity is defined based on most no of paintings done by an artist)
-	select a.full_name as artist, a.nationality,x.no_of_painintgs
+
+select a.full_name as artist, a.nationality,x.no_of_painintgs
 	from (	select a.artist_id, count(1) as no_of_painintgs
 			, rank() over(order by count(1) desc) as rnk
 			from work w
@@ -130,10 +132,10 @@ select m.name as museum, m.city,m.country,x.no_of_painintgs
 			group by a.artist_id) x
 	join artist a on a.artist_id=x.artist_id
 	where x.rnk<=5;
-============================================================================================================================
-===============================================================================================================================
+
 -- 13) Display the 3 least popular canva sizes
-	SELECT label, ranking, no_of_paintings
+
+SELECT label, ranking, no_of_paintings
 FROM (
     SELECT cs.size_id, cs.label, COUNT(1) AS no_of_paintings,
            DENSE_RANK() OVER (ORDER BY COUNT(1)) AS ranking
@@ -144,10 +146,10 @@ FROM (
 ) x
 WHERE x.ranking <= 3;
 
-===========================================================================================================================================
-===========================================================================================================================================
+
 -- 14) Which museum is open for the longest during a day. 
 -- Dispay museum name, state and hours open and which day?
+
 SELECT museum_name, city AS state, day, open, close, duration
 FROM (
     SELECT m.name AS museum_name, m.state AS city, day, open, close,
@@ -159,10 +161,10 @@ FROM (
     JOIN museum m ON m.museum_id = mh.museum_id
 ) x
 WHERE x.rnk = 1;
-=============================================================================================================================================
 
 -- 15) Which museum has the most no of most popular painting style?
-	with pop_style as 
+
+with pop_style as 
 			(select style
 			,rank() over(order by count(1) desc) as rnk
 			from work
@@ -180,8 +182,7 @@ WHERE x.rnk = 1;
 	from cte 
 	where rnk=1;
     
-================================================================================================================
-===============================================================================================================
+
 -- 16) Identify the artists whose paintings are displayed in multiple countries
 	with cte as
 		(select distinct a.full_name as artist, 
@@ -197,7 +198,7 @@ WHERE x.rnk = 1;
 	having count(1)>1
 	order by 2 desc;
 
- ===================================================================================================================================================================================
+
  
 -- 17)Display the country and the city with most no of museums. Output 2 seperate columns to mention the city and country. If there are multiple value, seperate them with comma.
 	
@@ -220,11 +221,10 @@ FROM cte_country country
 CROSS JOIN cte_city city
 WHERE country.rnk = 1
   AND city.rnk = 1;
-=======================================================================================================================================================================================
-=======================================================================================================================================================================================
 
 -- 18) Which artist has the most no of Portraits paintings outside USA?. Display artist name, no of paintings and the artist nationality.
-	select full_name as artist_name, nationality, no_of_paintings
+
+ select full_name as artist_name, nationality, no_of_paintings
 	from (
 		select a.full_name, a.nationality
 		,count(1) as no_of_paintings
@@ -238,10 +238,11 @@ WHERE country.rnk = 1
 		group by a.full_name, a.nationality) x
 	where rnk=1;	
 
-===========================================================================================================================================================================================
+
 
 -- 19)	21) Which are the 3 most popular and 3 least popular painting styles?
-	with cte as 
+
+with cte as 
 		(select style, count(1) as cnt
 		, rank() over(order by count(1) desc) rnk
 		, count(1) over() as no_of_records
@@ -253,11 +254,11 @@ WHERE country.rnk = 1
 	from cte
 	where rnk <=3
 	or rnk > no_of_records - 3;
-=============================================================================================================================================
-=============================================================================================================================================
+
 
 -- 20)Which country has the 5th highest no of paintings?
-	with cte as 
+
+with cte as 
 		(select m.country, count(1) as no_of_Paintings
 		, rank() over(order by count(1) desc) as rnk
 		from work w
@@ -266,4 +267,4 @@ WHERE country.rnk = 1
 	select country, no_of_Paintings
 	from cte 
 	where rnk=5;
-=================================================================================================================================================================================================================
+
